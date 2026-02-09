@@ -12,3 +12,7 @@ import pandas as pd
 df = pd.read_sql_query("SELECT * FROM transactions", con=conn)
 
 
+print(df)
+
+
+
