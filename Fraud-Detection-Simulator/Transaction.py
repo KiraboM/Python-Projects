@@ -1,9 +1,11 @@
 class Transaction:
-    def __init__(self, id, name, amount, time, location):
-        self.id = id
-        self.name = name
+    def __init__(self, transaction_id, user_id, amount, time, time_readable, merchant,location):
+        self.transaction_id = transaction_id
+        self.user_id = user_id
         self.amount = amount
         self.time = time
+        self.time_readable = time_readable
+        self.merchant = merchant
         self.location = location
 
     def get_id(self):

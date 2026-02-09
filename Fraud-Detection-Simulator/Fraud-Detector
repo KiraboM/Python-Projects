@@ -1,0 +1,43 @@
+import sqlite3
+from pathlib import Path
+
+import random
+
+company_list = ["Amazon", "Tesco", "Sainsbury's","Netflix", "Uniliever"]
+location_list = ["Enlgand", "Scotland", "Wales", "Northen Island"]
+name_list = ["Jeff", "Harris", "Jane", "Henry", "Silvia"]
+
+db_path = Path(__file__).with_name("fraud_simulator.db")
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+cursor.execute(""" 
+CREATE TABLE IF NOT EXISTS transactions(
+        transaction_id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        amount REAL,
+        time INTEGER,
+        time_readable TEXT,
+        merchant TEXT,
+        location TEXT
+        )
+""")
+
+conn.commit()
+
+
+
+for i in range(100):
+    cursor.execute("""
+    INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (i, random.randint(1, 5), max(1 ,random.normalvariate(40, 30)), random.randint(1000000, 1000000000), str(random.randint(1, 24)) + ":" + str(random.randint(1, 59)), random.choice(company_list), random.choice(location_list)))
+
+conn.commit()
+
+import pandas as pd
+
+df = pd.read_sql_query("SELECT * FROM transactions", con=conn)
+
+print(df.head())
+
