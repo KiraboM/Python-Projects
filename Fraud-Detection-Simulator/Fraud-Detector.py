@@ -13,6 +13,8 @@ fraud_cursor = fraud_conn.cursor()
 
 import pandas as pd
 
+#fraud_cursor.execute("DROP TABLE frauds")
+
 fraud_cursor.execute(""" 
 CREATE TABLE IF NOT EXISTS frauds(
         transaction_id INTEGER PRIMARY KEY,
@@ -21,7 +23,8 @@ CREATE TABLE IF NOT EXISTS frauds(
         time INTEGER,
         time_readable TEXT,
         merchant TEXT,
-        location TEXT
+        location TEXT,
+        isFraud BOOLEAN
         )
 """)
 
@@ -49,10 +52,40 @@ def checkAmount(id):
         return
     average = total / count
     fraudCheckNum = average * 2
-    for i in range (len(total_df)):
-        current_df = total_df[i]
-        if(current_df["amount"] > fraudCheckNum):
-            current_df["isFraud"] = True#Mark transactions that are abnormally large as fraud
+    rows = []
+    for i in range(len(total_df)):
+        current_df = total_df.iloc[i]
+        if current_df["amount"] > fraudCheckNum:
+            rows.append(
+                (
+                    int(current_df["transaction_id"]),
+                    int(current_df["user_id"]),
+                    float(current_df["amount"]),
+                    int(current_df["time"]),
+                    str(current_df["time_readable"]),
+                    str(current_df["merchant"]),
+                    str(current_df["location"]),
+                    True,
+                )
+            )
+    if rows:
+        fraud_cursor.executemany(
+            """
+            INSERT INTO frauds(
+                transaction_id,
+                user_id,
+                amount,
+                time,
+                time_readable,
+                merchant,
+                location,
+                isFraud
+            )
+            VALUES (?,?,?,?,?,?,?,?)
+            """,
+            rows
+        )
+        fraud_conn.commit()
 
 
 #Checks if user has two transactions that occur in 2 far away places in too short of a timeframe
@@ -62,50 +95,67 @@ def checkLocation(id):
         con=conn,
         params=[id]
     )
-    for i in range (len(total_df) - 1):
+    rows = [[]]
+    for i in range(len(total_df) - 1):
         current_df = total_df.iloc[i]
         next_df = total_df.iloc[i + 1]
-        if(current_df["location"] == next_df["location"]):
+        if current_df["location"] != next_df["location"]:
             difference = next_df["time"] - current_df["time"]
-            if(difference <= 600):
-                current_df["isFraud"] = True
-                next_df["isFraud"] = True
+            if difference <= 600:
+                rows.append(
+                    (
+                        int(current_df["transaction_id"]),
+                        int(current_df["user_id"]),
+                        float(current_df["amount"]),
+                        int(current_df["time"]),
+                        str(current_df["time_readable"]),
+                        str(current_df["merchant"]),
+                        str(current_df["location"]),
+                        True,
+                    )
+                )
+                rows.append(
+                    (
+                        int(next_df["transaction_id"]),
+                        int(next_df["user_id"]),
+                        float(next_df["amount"]),
+                        int(next_df["time"]),
+                        str(next_df["time_readable"]),
+                        str(next_df["merchant"]),
+                        str(next_df["location"]),
+                        True,
+                    )
+                )
+    if rows:
+        fraud_cursor.executemany(
+            """
+            INSERT OR IGNORE INTO frauds(
+                transaction_id,
+                user_id,
+                amount,
+                time,
+                time_readable,
+                merchant,
+                location,
+                isFraud
+            )
+            VALUES (?,?,?,?,?,?,?,?)
+            """,
+            rows
+        )
+    fraud_conn.commit()
+                
 
                 
 #Main function used to detect frauds
-fraud_cursor.execute("DELETE FROM frauds")
-fraud_conn.commit()
 def fraudDetector(id):
     checkAmount(id)
     checkLocation(id)
-    frauds_df = pd.read_sql_query(
-        "SELECT * FROM transactions WHERE isFraud = ?",
-        con=conn,
-        params=[True]
-    )
-     rows = list(
-        frauds_df[
-            [
-                "transaction_id",
-                "user_id",
-                "amount",
-                "time",
-                "time_readable",
-                "merchant",
-                "location",
-                "isFraud",
-            ]
-        ].itertuples(index=False, name=None)
-    if rows:
-        fraud_cursor.execute(
-            """
-            INSERT INTO frauds(transaction_id, user_id, amount, time, time_readable, merchant, location)
-            VALUES (?,?,?,?,?,?,?)
-            """,
-            rows,
-        )
+
 fraud_conn.commit()
 
 fraudDetector(2)
 df = pd.read_sql_query("SELECT * FROM frauds", con=fraud_conn)
+pd.set_option("display.max_rows", None)
+pd.set_option("display.max_columns", None)
 print(df)

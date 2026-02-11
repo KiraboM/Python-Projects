@@ -11,6 +11,8 @@ db_path = Path(__file__).with_name("fraud_simulator.db")
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
+cursor.execute("DROP TABLE transactions")
+
 cursor.execute(""" 
 CREATE TABLE IF NOT EXISTS transactions(
         transaction_id INTEGER PRIMARY KEY,
@@ -19,13 +21,13 @@ CREATE TABLE IF NOT EXISTS transactions(
         time INTEGER,
         time_readable TEXT,
         merchant TEXT,
-        location TEXT
+        location TEXT,
+        isFraud BOOLEAN
         )
 """)
 
 conn.commit()
 
-cursor.execute("DELETE FROM transactions")
 
 
 
