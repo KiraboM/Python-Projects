@@ -9,7 +9,7 @@ cursor = conn.cursor()
 
 import pandas as pd
 
-df = pd.read_sql_query("SELECT * FROM transactions", con=conn)
+df = pd.read_sql_query("SELECT * FROM transactions WHERE amount > 40", con=conn)
 
 
 print(df)
