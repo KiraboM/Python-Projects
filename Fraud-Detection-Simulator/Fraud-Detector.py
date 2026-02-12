@@ -64,7 +64,6 @@ def checkAmount(id):
                     str(current_df["time_readable"]),
                     str(current_df["merchant"]),
                     str(current_df["location"]),
-                    True,
                 )
             )
     if rows:
@@ -79,7 +78,7 @@ def checkAmount(id):
                 merchant,
                 location
             )
-            VALUES (?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?)
             """,
             rows
         )
@@ -205,8 +204,8 @@ def transactionNum(id):
 
 #Main function used to detect frauds
 def fraudDetector(id):
-    """ checkAmount(id)
-    checkLocation(id) """
+    checkAmount(id)
+    checkLocation(id)
     transactionNum(id)
 
 fraud_conn.commit()
