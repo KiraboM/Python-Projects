@@ -21,8 +21,7 @@ CREATE TABLE IF NOT EXISTS transactions(
         time INTEGER,
         time_readable TEXT,
         merchant TEXT,
-        location TEXT,
-        isFraud BOOLEAN
+        location TEXT
         )
 """)
 

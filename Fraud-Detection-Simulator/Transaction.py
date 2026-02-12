@@ -1,5 +1,5 @@
 class Transaction:
-    def __init__(self, transaction_id, user_id, amount, time, time_readable, merchant,location, isFraud):
+    def __init__(self, transaction_id, user_id, amount, time, time_readable, merchant,location):
         self.transaction_id = transaction_id
         self.user_id = user_id
         self.amount = amount
@@ -7,7 +7,7 @@ class Transaction:
         self.time_readable = time_readable
         self.merchant = merchant
         self.location = location
-        self.isFraud = isFraud
+
 
     def get_id(self):
         return self.id
