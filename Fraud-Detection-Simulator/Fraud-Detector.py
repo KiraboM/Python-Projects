@@ -108,7 +108,6 @@ def checkLocation(id):
                         str(current_df["time_readable"]),
                         str(current_df["merchant"]),
                         str(current_df["location"]),
-                        True
                     )
                 )
                 rows.append(
@@ -134,7 +133,7 @@ def checkLocation(id):
                 merchant,
                 location
             )
-            VALUES (?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?)
             """,
             rows
         )

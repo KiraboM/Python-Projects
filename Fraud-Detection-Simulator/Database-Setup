@@ -30,11 +30,11 @@ conn.commit()
 
 
 
-for i in range(100):
+for i in range(10000):
     cursor.execute("""
-    INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, isFraud)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (i, random.randint(1, 5), max(1 ,random.normalvariate(40, 30)), random.randint(1000000, 1000000000), str(random.randint(1, 24)) + ":" + str(random.randint(1, 59)), random.choice(company_list), random.choice(location_list), False))
+    INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (i, random.randint(1, 5), max(1 ,random.normalvariate(40, 30)), random.randint(1000000, 1000000000), str(random.randint(1, 24)) + ":" + str(random.randint(1, 59)), random.choice(company_list), random.choice(location_list)))
 
 conn.commit()
 
@@ -42,5 +42,4 @@ import pandas as pd
 
 df = pd.read_sql_query("SELECT * FROM transactions", con=conn)
 
-print(df.head())
 
