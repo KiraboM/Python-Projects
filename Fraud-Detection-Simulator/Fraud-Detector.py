@@ -163,11 +163,29 @@ def transactionNum(id):
                 left_df = total_df.iloc[left]
                 time = right_df["time"] - left_df["time"]
         right += 1
+def nightTime(id):
+    #Flag transactions made between 1AM and 4AM as suspicous
+    total_df = pd.read_sql_query(
+        "SELECT * FROM transactions WHERE user_id = ?",
+        con=conn,
+        params=[id]
+    )
+    for i in range(len(total_df)):
+        current_df = total_df.iloc[i]
+        current_id = int(current_df["transaction_id"])
+        time = str(current_df["time_readable"])
+        if(time[0] >= "1" and time[0] <= "4"):
+            conn.execute(
+                "UPDATE transactions SET fraud_score = fraud_score + 15 WHERE transaction_id = ?",
+                [current_id]
+            )
+    conn.commit()
 #Main function used to detect frauds
 def fraudDetector(id):
     checkAmount(id)
     checkLocation(id)
     transactionNum(id)
+    nightTime(id)
     #Mark any transaction with a fraud_score >= 70 as suspicous
     total_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ?",
@@ -178,7 +196,7 @@ def fraudDetector(id):
     rows = []
     for i in range(len(total_df)):
         current_df = total_df.iloc[i]
-        if(current_df["fraud_score"] >= 70):
+        if(current_df["fraud_score"] >= 5):
             rows.append(
                 (
                     int(current_df["transaction_id"]),
