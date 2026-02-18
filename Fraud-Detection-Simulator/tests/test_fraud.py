@@ -1,1 +1,42 @@
+from fraud_engine.detector import fraudDetector
+from fraud_engine.detector import checkAmount
+from fraud_engine.detector import checkLocation
+from fraud_engine.detector import nightTime
+from fraud_engine.detector import transactionNum
+
+import sqlite3
+from pathlib import Path
+
+import random
+
+db_path = Path(__file__).with_name("fraud_simulator.db")
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+fraud_path = Path(__file__).with_name("Fraud-Data.db")
+fraud_conn = sqlite3.connect(fraud_path)
+fraud_cursor = fraud_conn.cursor()
+
+import pandas as pd
+
+def test_checkAmount():
+    conn.executemany(
+        """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
+        VALUES (?,?,?,?,?,?,?,?) """,
+        (1,6,30,12347859,"6:30","Tesco","England",0),
+        (1,6,40,12347859,"6:30","Tesco","England",0),
+        (1,6,20000,12347859,"6:30","Tesco","England",0)
+        
+    )
+    conn.commit()
+    fraudDetector(6)
+    this_df = pd.read_sql_query(
+        "SELECT * FROM frauds WHERE user_id = ?",
+        con=fraud_conn,
+        params=[6]
+    )
+    assert len(this_df) >= 1#Check if faulty transaction was added to database
+
+
+
 

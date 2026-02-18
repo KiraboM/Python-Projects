@@ -13,21 +13,6 @@ fraud_cursor = fraud_conn.cursor()
 
 import pandas as pd
 
-fraud_cursor.execute("DROP TABLE frauds")
-
-fraud_cursor.execute(""" 
-CREATE TABLE IF NOT EXISTS frauds(
-        transaction_id INTEGER PRIMARY KEY,
-        user_id INTEGER,
-        amount REAL,
-        time INTEGER,
-        time_readable TEXT,
-        merchant TEXT,
-        location TEXT,
-        fraud_score INTEGER
-        )
-""")
-
 #Check if a user has an unusually large transaction
 def checkAmount(id):
     total_df = pd.read_sql_query(
@@ -182,6 +167,20 @@ def nightTime(id):
     conn.commit()
 #Main function used to detect frauds
 def fraudDetector(id):
+    fraud_cursor.execute("DROP TABLE frauds")
+
+    fraud_cursor.execute(""" 
+        CREATE TABLE IF NOT EXISTS frauds(
+                transaction_id INTEGER PRIMARY KEY,
+                user_id INTEGER,
+                amount REAL,
+                time INTEGER,
+                time_readable TEXT,
+                merchant TEXT,
+                location TEXT,
+                fraud_score INTEGER
+                )
+        """)
     checkAmount(id)
     checkLocation(id)
     transactionNum(id)
