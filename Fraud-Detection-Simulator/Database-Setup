@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS transactions(
         time INTEGER,
         time_readable TEXT,
         merchant TEXT,
-        location TEXT
+        location TEXT,
+        fraud_score INTEGER
         )
 """)
 
@@ -32,9 +33,9 @@ conn.commit()
 
 for i in range(10000):
     cursor.execute("""
-    INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (i, random.randint(1, 5), max(1 ,random.normalvariate(40, 30)), random.randint(1000000, 1000000000), str(random.randint(1, 24)) + ":" + str(random.randint(1, 59)), random.choice(company_list), random.choice(location_list)))
+    INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
+    VALUES (?, ?, ?, ?, ?, ?, ?,?)
+    """, (i, random.randint(1, 5), max(1 ,random.normalvariate(40, 30)), random.randint(1000000, 1000000000), str(random.randint(1, 24)) + ":" + str(random.randint(1, 59)), random.choice(company_list), random.choice(location_list), 0))
 
 conn.commit()
 
