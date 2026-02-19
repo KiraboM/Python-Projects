@@ -1,8 +1,6 @@
 import sqlite3
 from pathlib import Path
 
-import random
-
 db_path = Path(__file__).with_name("fraud_simulator.db")
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
@@ -14,13 +12,7 @@ fraud_cursor = fraud_conn.cursor()
 import pandas as pd
 
 #Check if a user has an unusually large transaction
-def checkAmount(id):
-    total_df = pd.read_sql_query(
-        "SELECT * FROM transactions WHERE user_id = ?",
-        con = conn,
-        params=[id]
-
-    )
+def checkAmount(id, total_df):
     total_df_sum = pd.read_sql_query(
         "SELECT SUM(amount) FROM transactions WHERE user_id = ?",
         con=conn,
@@ -49,12 +41,7 @@ def checkAmount(id):
     conn.commit()
 
 #Checks if user has two transactions that occur in 2 far away places in too short of a timeframe
-def checkLocation(id):
-    total_df = pd.read_sql_query(
-        "SELECT * FROM transactions WHERE user_id = ? ORDER BY time",
-        con=conn,
-        params=[id]
-    )
+def checkLocation(id, total_df):
     rows = []
     for i in range(len(total_df) - 1):
         current_df = total_df.iloc[i]
@@ -72,13 +59,8 @@ def checkLocation(id):
     conn.commit()
 #If a user makes more than 10 transactions in 5 minutes 
 #AND more than 3 of these transactions are to different merchants, that is suspicious!
-def transactionNum(id):
+def transactionNum(id, total_df):
     #Collect every transaction of given user
-    total_df = pd.read_sql_query(
-        "SELECT * FROM transactions WHERE user_id = ? ORDER BY time",
-        con=conn,
-        params=[id]
-    )
     rows = []
     merchants = []
     if(len(total_df) <= 1):#Check if table has more than one element
@@ -125,7 +107,7 @@ def transactionNum(id):
         time = right_df["time"] - left_df["time"]
 
         #Check if 10 or more transactions were made in less than 5 minutes
-        #Also check if mroe than 3 merchants were paid in that timeframe
+        #Also check if more than 3 merchants were paid in that timeframe
         if(time <= 300):
             if(size > 10):
                 if(len(merchants) > 3):
@@ -136,10 +118,15 @@ def transactionNum(id):
                             "UPDATE transactions SET fraud_score = fraud_score + 30 WHERE transaction_id = ?",
                             [current_id]
                         )
-                        for merchant in merchants:
-                            if merchant not in rows:
-                                merchants.remove(merchant)
                     conn.commit()
+                    #Remove any merchant that is no longer in the window
+                    for merchant in merchants:
+                            found = False
+                            for row in rows:
+                                if row[5] == merchant:
+                                    found = True
+                            if not found:
+                                merchants.remove(merchant)
 
                     
         else:
@@ -148,18 +135,13 @@ def transactionNum(id):
                 left_df = total_df.iloc[left]
                 time = right_df["time"] - left_df["time"]
         right += 1
-def nightTime(id):
+def nightTime(id, total_df):
     #Flag transactions made between 1AM and 4AM as suspicous
-    total_df = pd.read_sql_query(
-        "SELECT * FROM transactions WHERE user_id = ?",
-        con=conn,
-        params=[id]
-    )
     for i in range(len(total_df)):
         current_df = total_df.iloc[i]
         current_id = int(current_df["transaction_id"])
         time = str(current_df["time_readable"])
-        if(time[0] >= "1" and time[0] <= "4"):
+        if(int(time.remove(':')) >= 1 and int(time.remove(':')) <= 4):
             conn.execute(
                 "UPDATE transactions SET fraud_score = fraud_score + 15 WHERE transaction_id = ?",
                 [current_id]
@@ -167,7 +149,7 @@ def nightTime(id):
     conn.commit()
 #Main function used to detect frauds
 def fraudDetector(id):
-    fraud_cursor.execute("DROP TABLE frauds")
+    #fraud_cursor.execute("DROP TABLE frauds")
 
     fraud_cursor.execute(""" 
         CREATE TABLE IF NOT EXISTS frauds(
@@ -181,21 +163,21 @@ def fraudDetector(id):
                 fraud_score INTEGER
                 )
         """)
-    checkAmount(id)
-    checkLocation(id)
-    transactionNum(id)
-    nightTime(id)
-    #Mark any transaction with a fraud_score >= 70 as suspicous
     total_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ?",
         con=conn,
         params=[id]
     )
+    checkAmount(id, total_df)
+    checkLocation(id, total_df)
+    transactionNum(id, total_df)
+    nightTime(id, total_df)
+    #Mark any transaction with a fraud_score >= 70 as suspicous
     
     rows = []
     for i in range(len(total_df)):
         current_df = total_df.iloc[i]
-        if(current_df["fraud_score"] >= 5):
+        if(current_df["fraud_score"] >= 70):
             rows.append(
                 (
                     int(current_df["transaction_id"]),
