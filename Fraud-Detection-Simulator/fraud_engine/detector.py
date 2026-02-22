@@ -1,6 +1,9 @@
 import sqlite3
 from pathlib import Path
 
+import random
+import numpy as np
+
 db_path = Path(__file__).with_name("fraud_simulator.db")
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
@@ -12,23 +15,17 @@ fraud_cursor = fraud_conn.cursor()
 import pandas as pd
 
 #Check if a user has an unusually large transaction
-def checkAmount(id, total_df):
-    total_df_sum = pd.read_sql_query(
-        "SELECT SUM(amount) FROM transactions WHERE user_id = ?",
+def checkAmount(id, total_df, conn):
+    total_df_amount = pd.read_sql_query(
+        "SELECT amount FROM transactions WHERE user_id = ?",
         con=conn,
         params=[id],
     )
-    count_df = pd.read_sql_query(
-        "SELECT COUNT(*) FROM transactions WHERE user_id = ?",
-        con=conn,
-        params=[id],
-    )
-    total = total_df_sum.iloc[0, 0] or 0
-    count = count_df.iloc[0, 0] or 0
-    if count == 0:
-        return
-    average = total / count
-    fraudCheckNum = average * 2
+    amounts = np.array(total_df_amount)
+    #Get mean and standard deviation from data
+    average = np.mean(amounts)
+    std = np.std(amounts)
+    fraudCheckNum = average + 3*std
     
     for i in range(len(total_df)):
         current_df = total_df.iloc[i]
@@ -41,7 +38,7 @@ def checkAmount(id, total_df):
     conn.commit()
 
 #Checks if user has two transactions that occur in 2 far away places in too short of a timeframe
-def checkLocation(id, total_df):
+def checkLocation(id, total_df, conn):
     rows = []
     for i in range(len(total_df) - 1):
         current_df = total_df.iloc[i]
@@ -59,7 +56,7 @@ def checkLocation(id, total_df):
     conn.commit()
 #If a user makes more than 10 transactions in 5 minutes 
 #AND more than 3 of these transactions are to different merchants, that is suspicious!
-def transactionNum(id, total_df):
+def transactionNum(id, total_df, conn):
     #Collect every transaction of given user
     rows = []
     merchants = []
@@ -121,11 +118,7 @@ def transactionNum(id, total_df):
                     conn.commit()
                     #Remove any merchant that is no longer in the window
                     for merchant in merchants:
-                            found = False
-                            for row in rows:
-                                if row[5] == merchant:
-                                    found = True
-                            if not found:
+                            if merchant not in rows[5]:
                                 merchants.remove(merchant)
 
                     
@@ -135,7 +128,7 @@ def transactionNum(id, total_df):
                 left_df = total_df.iloc[left]
                 time = right_df["time"] - left_df["time"]
         right += 1
-def nightTime(id, total_df):
+def nightTime(id, total_df, conn):
     #Flag transactions made between 1AM and 4AM as suspicous
     for i in range(len(total_df)):
         current_df = total_df.iloc[i]
@@ -148,7 +141,7 @@ def nightTime(id, total_df):
             )
     conn.commit()
 #Main function used to detect frauds
-def fraudDetector(id):
+def fraudDetector(id, conn):
     #fraud_cursor.execute("DROP TABLE frauds")
 
     fraud_cursor.execute(""" 
@@ -168,10 +161,16 @@ def fraudDetector(id):
         con=conn,
         params=[id]
     )
-    checkAmount(id, total_df)
-    checkLocation(id, total_df)
-    transactionNum(id, total_df)
-    nightTime(id, total_df)
+    checkAmount(id, total_df, conn)
+    checkLocation(id, total_df, conn)
+    transactionNum(id, total_df, conn)
+    nightTime(id, total_df, conn)
+    total_df = pd.read_sql_query(
+        "SELECT * FROM transactions WHERE user_id = ?",
+        con=conn,
+        params=[id]
+    )
+    
     #Mark any transaction with a fraud_score >= 70 as suspicous
     
     rows = []
@@ -211,10 +210,10 @@ def fraudDetector(id):
 
 
 
-fraudDetector(1)
+""" fraudDetector(1)
 fraudDetector(2)
 fraudDetector(3)
 fraudDetector(4)
 fraudDetector(5)
 df = pd.read_sql_query("SELECT * FROM frauds", con=fraud_conn)
-print(df)
+print(df) """

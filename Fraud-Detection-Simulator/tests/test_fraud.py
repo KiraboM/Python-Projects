@@ -6,7 +6,7 @@ from fraud_engine.detector import transactionNum
 
 import sqlite3
 from pathlib import Path
-
+import numpy as np
 import random
 
 db_path = Path(__file__).with_name("fraud_simulator.db")
@@ -19,6 +19,8 @@ fraud_cursor = fraud_conn.cursor()
 
 import pandas as pd
 
+conn.execute("DROP TABLE transactions")
+
 def test_checkAmount():
     conn.executemany(
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
@@ -29,13 +31,18 @@ def test_checkAmount():
         
     )
     conn.commit()
-    fraudDetector(6)
+    total_df = pd.read_sql_query(
+        "SELECT * FROM transactions WHERE user_id = ?",
+        con=conn,
+        params=[6]
+    )
+    checkAmount(6, total_df, conn)
     this_df = pd.read_sql_query(
-        "SELECT * FROM frauds WHERE user_id = ?",
+        "SELECT * FROM transactions WHERE user_id = ? AND fraud_score > 0",
         con=fraud_conn,
         params=[6]
     )
-    assert len(this_df) >= 1#Check if faulty transaction was added to database
+    assert len(this_df) == 1#Check if faulty transaction was added to database
 
 
 
