@@ -4,18 +4,12 @@ from pathlib import Path
 import random
 import numpy as np
 
-db_path = Path(__file__).with_name("fraud_simulator.db")
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
-
-fraud_path = Path(__file__).with_name("Fraud-Data.db")
-fraud_conn = sqlite3.connect(fraud_path)
-fraud_cursor = fraud_conn.cursor()
 
 import pandas as pd
 
 #Check if a user has an unusually large transaction
 def checkAmount(id, total_df, conn):
+    cursor = conn.cursor()
     total_df_amount = pd.read_sql_query(
         "SELECT amount FROM transactions WHERE user_id = ?",
         con=conn,
@@ -39,6 +33,7 @@ def checkAmount(id, total_df, conn):
 
 #Checks if user has two transactions that occur in 2 far away places in too short of a timeframe
 def checkLocation(id, total_df, conn):
+    cursor = conn.cursor()
     rows = []
     for i in range(len(total_df) - 1):
         current_df = total_df.iloc[i]
@@ -57,6 +52,7 @@ def checkLocation(id, total_df, conn):
 #If a user makes more than 10 transactions in 5 minutes 
 #AND more than 3 of these transactions are to different merchants, that is suspicious!
 def transactionNum(id, total_df, conn):
+    cursor = conn.cursor()
     #Collect every transaction of given user
     rows = []
     merchants = []
@@ -129,6 +125,7 @@ def transactionNum(id, total_df, conn):
                 time = right_df["time"] - left_df["time"]
         right += 1
 def nightTime(id, total_df, conn):
+    cursor = conn.cursor()
     #Flag transactions made between 1AM and 4AM as suspicous
     for i in range(len(total_df)):
         current_df = total_df.iloc[i]
@@ -141,7 +138,8 @@ def nightTime(id, total_df, conn):
             )
     conn.commit()
 #Main function used to detect frauds
-def fraudDetector(id, conn):
+def fraudDetector(id, conn, fraud_conn):
+    fraud_cursor = fraud_conn.cursor()
     #fraud_cursor.execute("DROP TABLE frauds")
 
     fraud_cursor.execute(""" 

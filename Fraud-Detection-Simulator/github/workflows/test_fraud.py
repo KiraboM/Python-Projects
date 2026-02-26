@@ -11,7 +11,6 @@ import random
 
 db_path = Path(__file__).with_name("fraud_simulator.db")
 conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
 
 fraud_path = Path(__file__).with_name("Fraud-Data.db")
 fraud_conn = sqlite3.connect(fraud_path)
@@ -21,13 +20,26 @@ import pandas as pd
 
 conn.execute("DROP TABLE transactions")
 
+conn.execute(""" 
+CREATE TABLE IF NOT EXISTS transactions(
+        transaction_id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        amount REAL,
+        time INTEGER,
+        time_readable TEXT,
+        merchant TEXT,
+        location TEXT,
+        fraud_score INTEGER
+        )
+""")
+
 def test_checkAmount():
     conn.executemany(
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
-        (1,6,30,12347859,"6:30","Tesco","England",0),
+        [(1,6,30,12347859,"6:30","Tesco","England",0),
         (1,6,40,12347859,"6:30","Tesco","England",0),
-        (1,6,20000,12347859,"6:30","Tesco","England",0)
+        (1,6,20000,12347859,"6:30","Tesco","England",0)]
         
     )
     conn.commit()
@@ -42,8 +54,9 @@ def test_checkAmount():
         con=fraud_conn,
         params=[6]
     )
-    assert len(this_df) == 1#Check if faulty transaction was added to database
-
-
+    #Check if faulty transaction was added to database
+    assert len(this_df) == 1
+    assert this_df.iloc[0]["transaction_id"] == 3
+    assert this_df.iloc[0]["fraud_score"] == 40
 
 
