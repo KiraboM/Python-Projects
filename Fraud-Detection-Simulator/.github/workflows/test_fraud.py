@@ -6,7 +6,6 @@ from fraud_engine.detector import transactionNum
 
 import sqlite3
 from pathlib import Path
-import numpy as np
 import random
 
 db_path = Path(__file__).with_name("fraud_simulator.db")
