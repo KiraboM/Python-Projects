@@ -38,8 +38,8 @@ def test_checkAmount():
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
         [(1,6,30,12347859,"6:30","Tesco","England",0),
-        (1,6,40,12347859,"6:30","Tesco","England",0),
-        (1,6,20000,12347859,"6:30","Tesco","England",0)]
+        (2,6,40,12347859,"6:30","Tesco","England",0),
+        (3,6,20000,12347859,"6:30","Tesco","England",0)]
         
     )
     conn.commit()
