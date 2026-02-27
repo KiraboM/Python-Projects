@@ -35,7 +35,7 @@ def checkAmount(id, total_df, conn):
 #Checks if user has two transactions that occur in 2 far away places in too short of a timeframe
 def checkLocation(id, total_df, conn):
     cursor = conn.cursor()
-    rows = []
+    total_df = total_df.sort_values("time")
     for i in range(len(total_df) - 1):
         current_df = total_df.iloc[i]
         current_id = int(current_df["transaction_id"])
@@ -114,9 +114,15 @@ def transactionNum(id, total_df, conn):
                         )
                     conn.commit()
                     #Remove any merchant that is no longer in the window
+                    foundMerchants = []
+                    for row in rows:
+                        #Extract current merchant from row tuple
+                        currentMerchant = row[5]
+                        if currentMerchant not in foundMerchants:
+                            foundMerchants.append(currentMerchant)
                     for merchant in merchants:
-                            if merchant not in rows[5]:
-                                merchants.remove(merchant)
+                        if merchant not in foundMerchants:
+                            merchants.remove(merchant)
 
                     
         else:
@@ -132,7 +138,8 @@ def nightTime(id, total_df, conn):
         current_df = total_df.iloc[i]
         current_id = int(current_df["transaction_id"])
         time = str(current_df["time_readable"])
-        if(int(time.remove(':')) >= 1 and int(time.remove(':')) <= 4):
+        hour = int (time.split(':')[0])
+        if(hour >= 1 and hour <= 4):
             conn.execute(
                 "UPDATE transactions SET fraud_score = fraud_score + 15 WHERE transaction_id = ?",
                 [current_id]
