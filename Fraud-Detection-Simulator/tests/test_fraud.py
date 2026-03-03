@@ -14,10 +14,7 @@ conn = sqlite3.connect(db_path)
 """ fraud_path = Path(__file__).with_name("Fraud-Data.db")
 fraud_conn = sqlite3.connect(fraud_path)
 fraud_cursor = fraud_conn.cursor() """
-#hello!
 import pandas as pd
-
-conn.execute("DROP TABLE transactions")
 
 conn.execute(""" 
 CREATE TABLE IF NOT EXISTS transactions(
