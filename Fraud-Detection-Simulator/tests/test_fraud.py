@@ -60,8 +60,8 @@ def test_checkLocation():
     conn.executemany(
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
-        [(1,5,30,12347860,"6:30","Tesco","England",0),
-        (2,5,40,12347859,"6:30","Tesco","Scotland",0)]
+        [(4,5,30,12347860,"6:30","Tesco","England",0),
+        (5,5,40,12347859,"6:30","Tesco","Scotland",0)]
         
     )
     conn.commit()
@@ -84,19 +84,19 @@ def test_transactionNum():
     conn.executemany(
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
-        [(1,8,30,1,"6:30","Tesco","England",0),
-         (2,8,40,3,"6:30","Tesco","Scotland",0),
-         (3,8,40,4,"6:30","Amazon","Wales",0),
-         (4,8,40,6,"6:30","Amazon","Scotland",0),
-         (5,8,40,7,"6:30","Tesco","Wales",0),
-         (6,8,40,9,"6:30","Tesco","Scotland",0),
-         (7,8,40,12,"6:30","Tesco","Scotland",0),
-         (8,8,40,14,"6:30","Netflix","Northen Island",0),
-         (9,8,40,14,"6:30","Netflix","Scotland",0),
-         (10,8,40,14,"6:30","Netflix","Scotland",0),
-         (11,8,40,14,"6:30","Tesco","Scotland",0),
-         (12,8,40,14,"6:30","Tesco","Scotland",0),
-         (13,8,40,14,"6:30","Tesco","Scotland",0)]
+        [(6,8,30,1,"6:30","Tesco","England",0),
+         (7,8,40,3,"6:30","Tesco","Scotland",0),
+         (8,8,40,4,"6:30","Amazon","Wales",0),
+         (9,8,40,6,"6:30","Amazon","Scotland",0),
+         (10,8,40,7,"6:30","Tesco","Wales",0),
+         (11,8,40,9,"6:30","Tesco","Scotland",0),
+         (12,8,40,12,"6:30","Tesco","Scotland",0),
+         (13,8,40,14,"6:30","Netflix","Northen Island",0),
+         (14,8,40,14,"6:30","Netflix","Scotland",0),
+         (15,8,40,14,"6:30","Netflix","Scotland",0),
+         (16,8,40,14,"6:30","Tesco","Scotland",0),
+         (17,8,40,14,"6:30","Tesco","Scotland",0),
+         (18,8,40,14,"6:30","Tesco","Scotland",0)]
         
     )
     conn.commit()
