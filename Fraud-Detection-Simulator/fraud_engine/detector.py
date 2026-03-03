@@ -107,22 +107,20 @@ def transactionNum(id, total_df, conn):
         if(time <= 300):
             if(size > 10):
                 if(len(merchants) > 3):
+                    
                     while len(rows) >= 1:
                         current_df = rows.pop()
+                        currentMerchant = current_df["merchant"]
+                        
                         current_id = int(current_df[0])
                         cursor.execute(
                             "UPDATE transactions SET fraud_score = fraud_score + 30 WHERE transaction_id = ?",
                             [current_id]
                         )
+                        
                     conn.commit()
                     #Remove any merchant that is no longer in the window
-                    foundMerchants = []
-                    for row in rows:
-                        #Extract current merchant from row tuple
-                        currentMerchant = row[5]
-                        if currentMerchant not in foundMerchants:
-                            foundMerchants.append(currentMerchant)
-                    merchants = foundMerchants
+                    merchants = []
 
                     
         else:
@@ -130,6 +128,14 @@ def transactionNum(id, total_df, conn):
                 left += 1
                 left_df = total_df.iloc[left]
                 time = right_df["time"] - left_df["time"]
+            foundMerchants = []
+            #Remove any merchants that aren't in rows anymore
+            for row in rows:
+                #Extract current merchant from row tuple
+                currentMerchant = row[5]
+                if currentMerchant not in foundMerchants:
+                    foundMerchants.append(currentMerchant)
+            merchants = foundMerchants
         right += 1
 def nightTime(id, total_df, conn):
     cursor = conn.cursor()

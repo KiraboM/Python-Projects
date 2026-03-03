@@ -70,13 +70,47 @@ def test_checkLocation():
     total_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ?",
         con=conn,
-        params=[6]
+        params=[5]
     )
     checkLocation(5, total_df, conn)
     this_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ? AND fraud_score > 0",
         con=fraud_conn,
-        params=[6]
+        params=[5]
     )
     #Check if fraud transaction was added to database
     assert len(this_df) >= 2
+
+def test_transactionNum():
+    conn.executemany(
+        """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
+        VALUES (?,?,?,?,?,?,?,?) """,
+        [(1,8,30,1,"6:30","Tesco","England",0),
+         (2,8,40,3,"6:30","Tesco","Scotland",0),
+         (2,8,40,4,"6:30","Tesco","Wales",0),
+         (2,8,40,6,"6:30","Tesco","Scotland",0),
+         (2,8,40,7,"6:30","Tesco","Wales",0),
+         (2,8,40,9,"6:30","Tesco","Scotland",0),
+         (2,8,40,12,"6:30","Tesco","Scotland",0),
+         (2,8,40,14,"6:30","Tesco","Scotland",0),
+         (2,8,40,14,"6:30","Tesco","Scotland",0),
+         (2,8,40,14,"6:30","Tesco","Scotland",0),
+         (2,8,40,14,"6:30","Tesco","Scotland",0),
+         (2,8,40,14,"6:30","Tesco","Scotland",0),
+         (2,8,40,14,"6:30","Tesco","Scotland",0)]
+        
+    )
+    conn.commit()
+    total_df = pd.read_sql_query(
+        "SELECT * FROM transactions WHERE user_id = ?",
+        con=conn,
+        params=[8]
+    )
+    transactionNum(5, total_df, conn)
+    this_df = pd.read_sql_query(
+        "SELECT * FROM transactions WHERE user_id = ? AND fraud_score >= 30",
+        con=fraud_conn,
+        params=[8]
+    )
+    #Check if the faulty transactions were added to the database
+    assert len(this_df) == 13
