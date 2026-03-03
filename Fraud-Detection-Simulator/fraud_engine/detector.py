@@ -43,6 +43,7 @@ def checkLocation(id, total_df, conn):
 #AND more than 3 of these transactions are to different merchants, that is suspicious!
 def transactionNum(id, total_df, conn):
     cursor = conn.cursor()
+    flagged_ids = set()
     #Collect every transaction of given user
     rows = []
     merchants = []
@@ -100,11 +101,12 @@ def transactionNum(id, total_df, conn):
                         currentMerchant = current_df["merchant"]
                         
                         current_id = int(current_df[0])
-                        cursor.execute(
-                            "UPDATE transactions SET fraud_score = fraud_score + 30 WHERE transaction_id = ?",
-                            [current_id]
-                        )
-                        
+                        flagged_ids.add(current_id)
+                    #Only one SQL call = better performance
+                    cursor.executemany(
+                        "UPDATE transactions SET fraud_score = fraud_score + 30 WHERE transaction_id = ?",
+                        [(id, ) for id in flagged_ids]
+                    )
                     conn.commit()
                     #Remove any merchant that is no longer in the window
                     merchants = []
