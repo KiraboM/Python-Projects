@@ -22,17 +22,7 @@ def checkAmount(id, total_df, conn):
     std = np.std(amounts)
     fraudCheckNum = average + 3*std
 
-    suspicious = total_df[total_df["amount"] > fraudCheckNum]
-    
-    for i in range(len(total_df)):
-        current_df = total_df.iloc[i]
-        current_id = int(current_df["transaction_id"])
-        if current_df["amount"] > fraudCheckNum:
-            cursor.execute(
-                "UPDATE transactions SET fraud_score = fraud_score + 40 WHERE transaction_id = ?",
-                [current_id]
-            )
-    conn.commit()
+    total_df.loc[total_df["amount"] > fraudCheckNum, "fraud_score"] += 40
 
 #Checks if user has two transactions that occur in 2 far away places in too short of a timeframe
 def checkLocation(id, total_df, conn):
