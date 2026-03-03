@@ -58,3 +58,25 @@ def test_checkAmount():
     assert this_df.iloc[0]["transaction_id"] == 3
     assert this_df.iloc[0]["fraud_score"] == 40
 
+def test_checkLocation():
+    conn.executemany(
+        """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
+        VALUES (?,?,?,?,?,?,?,?) """,
+        [(1,5,30,12347860,"6:30","Tesco","England",0),
+        (2,5,40,12347859,"6:30","Tesco","Scotland",0)]
+        
+    )
+    conn.commit()
+    total_df = pd.read_sql_query(
+        "SELECT * FROM transactions WHERE user_id = ?",
+        con=conn,
+        params=[6]
+    )
+    checkLocation(5, total_df, conn)
+    this_df = pd.read_sql_query(
+        "SELECT * FROM transactions WHERE user_id = ? AND fraud_score > 0",
+        con=fraud_conn,
+        params=[6]
+    )
+    #Check if fraud transaction was added to database
+    assert len(this_df) >= 2
