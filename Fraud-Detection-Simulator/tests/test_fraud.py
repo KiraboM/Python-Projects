@@ -8,12 +8,12 @@ import sqlite3
 from pathlib import Path
 import random
 
-db_path = Path(__file__).with_name("fraud_simulator.db")
+db_path = Path(__file__).with_name(":memory:")
 conn = sqlite3.connect(db_path)
 
-fraud_path = Path(__file__).with_name("Fraud-Data.db")
+""" fraud_path = Path(__file__).with_name("Fraud-Data.db")
 fraud_conn = sqlite3.connect(fraud_path)
-fraud_cursor = fraud_conn.cursor()
+fraud_cursor = fraud_conn.cursor() """
 #hello!
 import pandas as pd
 
@@ -79,7 +79,7 @@ def test_checkLocation():
         params=[5]
     )
     #Check if fraud transaction was added to database
-    assert len(this_df) >= 2
+    assert len(this_df) == 2
 
 def test_transactionNum():
     conn.executemany(
@@ -113,4 +113,5 @@ def test_transactionNum():
         params=[8]
     )
     #Check if the faulty transactions were added to the database
-    assert len(this_df) == 13
+    assert len(this_df) == 3
+conn.close()
