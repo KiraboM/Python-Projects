@@ -198,6 +198,14 @@ def fraudDetector(id, conn, fraud_conn):
                     fraud_score
                 )
                 VALUES (?,?,?,?,?,?,?,?)
+                ON CONFLICT(transaction_id) DO UPDATE SET
+                    user_id = excluded.user_id,
+                    amount = excluded.amount,
+                    time = excluded.time,
+                    time_readable = excluded.time_readable,
+                    merchant = excluded.merchant,
+                    location = excluded.location,
+                    fraud_score = excluded.fraud_score
                 """,
                 rows
             )
