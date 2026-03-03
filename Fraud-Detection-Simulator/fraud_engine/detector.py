@@ -21,6 +21,8 @@ def checkAmount(id, total_df, conn):
     average = np.mean(amounts)
     std = np.std(amounts)
     fraudCheckNum = average + 3*std
+
+    suspicious = total_df[total_df["amount"] > fraudCheckNum]
     
     for i in range(len(total_df)):
         current_df = total_df.iloc[i]
@@ -120,9 +122,7 @@ def transactionNum(id, total_df, conn):
                         currentMerchant = row[5]
                         if currentMerchant not in foundMerchants:
                             foundMerchants.append(currentMerchant)
-                    for merchant in merchants:
-                        if merchant not in foundMerchants:
-                            merchants.remove(merchant)
+                    merchants = foundMerchants
 
                     
         else:
