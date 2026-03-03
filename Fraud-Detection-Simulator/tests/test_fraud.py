@@ -50,7 +50,7 @@ def test_checkAmount():
     checkAmount(6, total_df, conn)
     this_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ? AND fraud_score > 0",
-        con=fraud_conn,
+        con=conn,
         params=[6]
     )
     #Check if faulty transaction was added to database
@@ -75,7 +75,7 @@ def test_checkLocation():
     checkLocation(5, total_df, conn)
     this_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ? AND fraud_score > 0",
-        con=fraud_conn,
+        con=conn,
         params=[5]
     )
     #Check if fraud transaction was added to database
@@ -109,7 +109,7 @@ def test_transactionNum():
     transactionNum(5, total_df, conn)
     this_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ? AND fraud_score >= 30",
-        con=fraud_conn,
+        con=conn,
         params=[8]
     )
     #Check if the faulty transactions were added to the database
