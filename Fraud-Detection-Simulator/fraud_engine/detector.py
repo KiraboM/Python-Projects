@@ -130,7 +130,8 @@ def transactionNum(id, total_df, conn):
 def nightTime(id, total_df, conn):
     cursor = conn.cursor()
     #Flag transactions made between 1AM and 4AM as suspicous
-    for i in range(len(total_df)):
+    total_df.loc[(int((str(total_df["time_readable"])).split(':')[0])), "fraud_score"] += 15
+    """ for i in range(len(total_df)):
         current_df = total_df.iloc[i]
         current_id = int(current_df["transaction_id"])
         time = str(current_df["time_readable"])
@@ -140,7 +141,7 @@ def nightTime(id, total_df, conn):
                 "UPDATE transactions SET fraud_score = fraud_score + 15 WHERE transaction_id = ?",
                 [current_id]
             )
-    conn.commit()
+    conn.commit() """
 #Main function used to detect frauds
 def fraudDetector(id, conn, fraud_conn):
     fraud_cursor = fraud_conn.cursor()
