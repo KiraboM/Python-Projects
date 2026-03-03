@@ -87,14 +87,14 @@ def test_transactionNum():
         VALUES (?,?,?,?,?,?,?,?) """,
         [(1,8,30,1,"6:30","Tesco","England",0),
          (2,8,40,3,"6:30","Tesco","Scotland",0),
-         (3,8,40,4,"6:30","Tesco","Wales",0),
-         (4,8,40,6,"6:30","Tesco","Scotland",0),
+         (3,8,40,4,"6:30","Amazon","Wales",0),
+         (4,8,40,6,"6:30","Amazon","Scotland",0),
          (5,8,40,7,"6:30","Tesco","Wales",0),
          (6,8,40,9,"6:30","Tesco","Scotland",0),
          (7,8,40,12,"6:30","Tesco","Scotland",0),
-         (8,8,40,14,"6:30","Tesco","Scotland",0),
-         (9,8,40,14,"6:30","Tesco","Scotland",0),
-         (10,8,40,14,"6:30","Tesco","Scotland",0),
+         (8,8,40,14,"6:30","Netflix","Northen Island",0),
+         (9,8,40,14,"6:30","Netflix","Scotland",0),
+         (10,8,40,14,"6:30","Netflix","Scotland",0),
          (11,8,40,14,"6:30","Tesco","Scotland",0),
          (12,8,40,14,"6:30","Tesco","Scotland",0),
          (13,8,40,14,"6:30","Tesco","Scotland",0)]
@@ -113,5 +113,5 @@ def test_transactionNum():
         params=[8]
     )
     #Check if the faulty transactions were added to the database
-    assert len(this_df) == 3
+    assert len(this_df) == 13
 conn.close()
