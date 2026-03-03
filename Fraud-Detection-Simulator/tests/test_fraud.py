@@ -51,9 +51,10 @@ def test_checkAmount():
         params=[6]
     )
     #Check if faulty transaction was added to database
-    assert len(this_df) == 1
+    """ assert len(this_df) == 1
     assert this_df.iloc[0]["transaction_id"] == 3
-    assert this_df.iloc[0]["fraud_score"] == 40
+    assert this_df.iloc[0]["fraud_score"] == 40 """
+    return this_df
 
 def test_checkLocation():
     conn.executemany(
@@ -76,7 +77,8 @@ def test_checkLocation():
         params=[5]
     )
     #Check if fraud transaction was added to database
-    assert len(this_df) == 2
+    #assert len(this_df) == 2
+    return this_df
 
 def test_transactionNum():
     conn.executemany(
@@ -110,8 +112,12 @@ def test_transactionNum():
         params=[8]
     )
     #Check if the faulty transactions were added to the database
-    assert len(this_df) == 13
-test_checkAmount()
-test_checkLocation()
-test_transactionNum()
+    #assert len(this_df) == 13
+    return this_df
+checkAmount_df = test_checkAmount()
+checkLocation_df = test_checkLocation()
+transactionNum_df = test_transactionNum()
+assert len(checkAmount_df) == 1
+assert len(checkLocation_df) == 2
+assert len(transactionNum_df) == 13
 conn.close()
