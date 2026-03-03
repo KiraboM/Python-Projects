@@ -10,13 +10,7 @@ import pandas as pd
 
 #Check if a user has an unusually large transaction
 def checkAmount(id, total_df, conn):
-    cursor = conn.cursor()
-    total_df_amount = pd.read_sql_query(
-        "SELECT amount FROM transactions WHERE user_id = ?",
-        con=conn,
-        params=[id],
-    )
-    amounts = np.array(total_df_amount)
+    amounts = total_df["amount"]
     #Get mean and standard deviation from data
     average = np.mean(amounts)
     std = np.std(amounts)
@@ -28,6 +22,7 @@ def checkAmount(id, total_df, conn):
 def checkLocation(id, total_df, conn):
     cursor = conn.cursor()
     total_df = total_df.sort_values("time")
+    flagged_ids = set()
     for i in range(len(total_df) - 1):
         current_df = total_df.iloc[i]
         current_id = int(current_df["transaction_id"])
@@ -36,11 +31,13 @@ def checkLocation(id, total_df, conn):
         if current_df["location"] != next_df["location"]:
             difference = next_df["time"] - current_df["time"]
             if difference <= 600:
-                #Increase fraud score of all suspicious transactions
-                cursor.execute(
-                    "UPDATE transactions SET fraud_score = fraud_score + 40 WHERE transaction_id = ? OR transaction_id = ?",
-                    [current_id, next_id]
-                )
+                flagged_ids.add(current_id)
+                flagged_ids.add(next_id)
+    #Increase fraud score of all suspicious transactions
+    cursor.executemany(
+        "UPDATE transactions SET fraud_score = fraud_score + 40 WHERE transaction_id = ?",
+        [(id, ) for id in flagged_ids]
+    )
     conn.commit()
 #If a user makes more than 10 transactions in 5 minutes 
 #AND more than 3 of these transactions are to different merchants, that is suspicious!
@@ -130,7 +127,11 @@ def transactionNum(id, total_df, conn):
 def nightTime(id, total_df, conn):
     cursor = conn.cursor()
     #Flag transactions made between 1AM and 4AM as suspicous
-    total_df.loc[(int((str(total_df["time_readable"])).split(':')[0])), "fraud_score"] += 15
+    total_df["hour"] = total_df["time_readable"].str.split(":").str[0].astype(int)
+    total_df.loc[
+        total_df["hour"] >= 1 and total_df["hour"] <= 4,
+        "fraud_score"
+    ] += 15
     """ for i in range(len(total_df)):
         current_df = total_df.iloc[i]
         current_id = int(current_df["transaction_id"])
