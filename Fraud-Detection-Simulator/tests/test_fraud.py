@@ -111,4 +111,7 @@ def test_transactionNum():
     )
     #Check if the faulty transactions were added to the database
     assert len(this_df) == 13
+test_checkAmount()
+test_checkLocation()
+test_transactionNum()
 conn.close()
