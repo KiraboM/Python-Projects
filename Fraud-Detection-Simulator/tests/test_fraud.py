@@ -78,12 +78,6 @@ def test_checkLocation():
         params=[5]
     )
     checkLocation(5, total_df, conn)
-    total_df.to_sql(
-        name="transactions",
-        con=conn,
-        if_exists="replace",
-        index=False
-    )
     this_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ? AND fraud_score > 0",
         con=conn,
@@ -119,12 +113,6 @@ def test_transactionNum():
         params=[8]
     )
     transactionNum(8, total_df, conn)
-    total_df.to_sql(
-        name="transactions",
-        con=conn,
-        if_exists="replace",
-        index=False
-    )
     this_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ? AND fraud_score >= 30",
         con=conn,
