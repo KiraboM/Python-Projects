@@ -97,7 +97,8 @@ def transactionNum(id, total_df, conn):
                 if(len(merchants) > 3):
                     
                     for i in range(size):
-                        current_id = int(total_df["transaction_id"])
+                        current_df = total_df.iloc[size]
+                        current_id = int(current_df["transaction_id"])
                         if current_id not in flagged_ids:
                             flagged_ids.add(current_id)
                     cursor.executemany(
