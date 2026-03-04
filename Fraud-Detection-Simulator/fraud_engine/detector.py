@@ -107,8 +107,6 @@ def transactionNum(id, total_df, conn):
                     )
                     conn.commit()
                     flagged_ids.clear()
-                    #Remove any merchant that is no longer in the window
-                    merchants = []
         else:
             while(time > 300):
                 left_df = total_df.iloc[left]
