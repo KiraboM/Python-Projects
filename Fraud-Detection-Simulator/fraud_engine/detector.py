@@ -36,7 +36,7 @@ def checkLocation(id, total_df, conn):
     #Increase fraud score of all suspicious transactions
     cursor.executemany(
         "UPDATE transactions SET fraud_score = fraud_score + 40 WHERE transaction_id = ?",
-        [(id, ) for id in flagged_ids]
+        [(myID) for myID in flagged_ids]
     )
     conn.commit()
 #If a user makes more than 10 transactions in 5 minutes 
