@@ -45,15 +45,18 @@ def test_checkAmount():
         params=[6]
     )
     checkAmount(6, total_df, conn)
+    total_df.to_sql(
+        name="transactions",
+        con=conn,
+        if_exists="replace",
+        index=False
+    )
     this_df = pd.read_sql_query(
         "SELECT * FROM transactions WHERE user_id = ? AND fraud_score > 0",
         con=conn,
         params=[6]
     )
     #Check if faulty transaction was added to database
-    """ assert len(this_df) == 1
-    assert this_df.iloc[0]["transaction_id"] == 3
-    assert this_df.iloc[0]["fraud_score"] == 40 """
     return this_df
 
 def test_checkLocation():
@@ -114,6 +117,7 @@ def test_transactionNum():
     #Check if the faulty transactions were added to the database
     #assert len(this_df) == 13
     return this_df
+
 checkAmount_df = test_checkAmount()
 checkLocation_df = test_checkLocation()
 transactionNum_df = test_transactionNum()
