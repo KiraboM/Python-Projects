@@ -98,14 +98,12 @@ def transactionNum(id, total_df, conn):
                     
                     while len(rows) >= 1:
                         current_df = rows.pop()
-                        currentMerchant = current_df["merchant"]
-                        
                         current_id = int(current_df[0])
                         flagged_ids.add(current_id)
                     #Only one SQL call = better performance
                     cursor.executemany(
                         "UPDATE transactions SET fraud_score = fraud_score + 30 WHERE transaction_id = ?",
-                        [(id, ) for id in flagged_ids]
+                        [(myId, ) for myId in flagged_ids]
                     )
                     conn.commit()
                     #Remove any merchant that is no longer in the window
@@ -121,7 +119,7 @@ def transactionNum(id, total_df, conn):
             #Remove any merchants that aren't in rows anymore
             for row in rows:
                 #Extract current merchant from row tuple
-                currentMerchant = row[5]
+                currentMerchant = str(row[5])
                 if currentMerchant not in foundMerchants:
                     foundMerchants.append(currentMerchant)
             merchants = foundMerchants
