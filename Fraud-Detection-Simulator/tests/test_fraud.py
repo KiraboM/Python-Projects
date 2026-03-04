@@ -35,7 +35,7 @@ def test_checkAmount():
         VALUES (?,?,?,?,?,?,?,?) """,
         [(1,6,30,12347859,"6:30","Tesco","England",0),
         (2,6,40,12347859,"6:30","Tesco","England",0),
-        (3,6,20000,12347859,"6:30","Tesco","England",0)]
+        (3,6,200000000000000000000,12347859,"6:30","Tesco","England",0)]
         
     )
     conn.commit()
@@ -56,7 +56,6 @@ def test_checkAmount():
         con=conn,
         params=[6]
     )
-    #Check if faulty transaction was added to database
     return this_df
 
 def test_checkLocation():
