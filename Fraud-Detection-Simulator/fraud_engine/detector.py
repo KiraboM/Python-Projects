@@ -211,10 +211,4 @@ def fraudDetector(id, conn, fraud_conn):
 
 
 
-""" fraudDetector(1)
-fraudDetector(2)
-fraudDetector(3)
-fraudDetector(4)
-fraudDetector(5)
-df = pd.read_sql_query("SELECT * FROM frauds", con=fraud_conn)
-print(df) """
+
