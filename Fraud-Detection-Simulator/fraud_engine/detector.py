@@ -29,7 +29,7 @@ def checkLocation(id, total_df, conn):
         next_df = total_df.iloc[i + 1]
         next_id = int(next_df["transaction_id"])
         if current_df["location"] != next_df["location"]:
-            difference = next_df["time"] - current_df["time"]
+            difference = int(next_df["time"]) - int(current_df["time"])
             if difference <= 600:
                 flagged_ids.add(current_id)
                 flagged_ids.add(next_id)
