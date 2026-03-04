@@ -102,8 +102,8 @@ def test_transactionNum():
          (19,8,40,14,"6:30","Netflix","Scotland",0),
          (20,8,40,14,"6:30","Netflix","Scotland",0),
          (21,8,40,14,"6:30","Tesco","Scotland",0),
-         (22,8,40,14,"6:30","Tesco","Scotland",0),
-         (23,8,40,14,"6:30","Tesco","Scotland",0)]
+         (22,8,40,14,"6:30","Sainsbury's","Scotland",0),
+         (23,8,40,14,"6:30","Sainsbury's","Scotland",0)]
         
     )
     conn.commit()
