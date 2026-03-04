@@ -35,7 +35,7 @@ def test_checkAmount():
         VALUES (?,?,?,?,?,?,?,?) """,
         [(1,6,30,12347859,"6:30","Tesco","England",0),
         (2,6,40,12347859,"6:30","Tesco","England",0),
-        (3,6,200000000000000000000,12347859,"6:30","Tesco","England",0)]
+        (3,6,200000,12347859,"6:30","Tesco","England",0)]
         
     )
     conn.commit()
@@ -120,7 +120,7 @@ def test_transactionNum():
 checkAmount_df = test_checkAmount()
 checkLocation_df = test_checkLocation()
 transactionNum_df = test_transactionNum()
-assert len(checkAmount_df) == 1
 assert len(checkLocation_df) == 2
 assert len(transactionNum_df) == 13
+assert len(checkAmount_df) == 1
 conn.close()
