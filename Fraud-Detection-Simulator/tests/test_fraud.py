@@ -68,7 +68,7 @@ def test_checkLocation():
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
         [(9,5,30,12347860,"6:30","Tesco","England",0),
-        (10,5,40,12347859,"6:30","Tesco","Scotland",0)]
+        (10,5,40,12347890,"6:31","Tesco","Scotland",0)]
         
     )
     conn.commit()
