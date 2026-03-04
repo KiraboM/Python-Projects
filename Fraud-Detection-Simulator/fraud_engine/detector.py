@@ -14,7 +14,7 @@ def checkAmount(id, total_df, conn):
     #Get mean and standard deviation from data
     average = np.mean(amounts)
     std = np.std(amounts)
-    fraudCheckNum = average + 3*std
+    fraudCheckNum = average + 2*std
 
     total_df.loc[total_df["amount"] > fraudCheckNum, "fraud_score"] += 40
 
