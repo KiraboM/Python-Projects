@@ -33,9 +33,14 @@ def test_checkAmount():
     conn.executemany(
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
-        [(1,6,30,12347859,"6:30","Tesco","England",0),
-        (2,6,40,12347859,"6:30","Tesco","England",0),
-        (3,6,200000,12347859,"6:30","Tesco","England",0)]
+        [(1,6,10,12347859,"6:30","Tesco","England",0),
+        (2,6,10,12347859,"6:30","Tesco","England",0),
+        (3,6,10,12347859,"6:30","Tesco","England",0),
+        (4,6,10,12347859,"6:30","Tesco","England",0),
+        (5,6,10,12347859,"6:30","Tesco","England",0),
+        (6,6,10,12347859,"6:30","Tesco","England",0),
+        (7,6,10,12347859,"6:30","Tesco","England",0),
+        (8,6,200000,12347859,"6:30","Tesco","England",0)]
         
     )
     conn.commit()
@@ -62,8 +67,8 @@ def test_checkLocation():
     conn.executemany(
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
-        [(4,5,30,12347860,"6:30","Tesco","England",0),
-        (5,5,40,12347859,"6:30","Tesco","Scotland",0)]
+        [(9,5,30,12347860,"6:30","Tesco","England",0),
+        (10,5,40,12347859,"6:30","Tesco","Scotland",0)]
         
     )
     conn.commit()
@@ -86,19 +91,19 @@ def test_transactionNum():
     conn.executemany(
         """ INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
         VALUES (?,?,?,?,?,?,?,?) """,
-        [(6,8,30,1,"6:30","Tesco","England",0),
-         (7,8,40,3,"6:30","Tesco","Scotland",0),
-         (8,8,40,4,"6:30","Amazon","Wales",0),
-         (9,8,40,6,"6:30","Amazon","Scotland",0),
-         (10,8,40,7,"6:30","Tesco","Wales",0),
-         (11,8,40,9,"6:30","Tesco","Scotland",0),
-         (12,8,40,12,"6:30","Tesco","Scotland",0),
-         (13,8,40,14,"6:30","Netflix","Northen Island",0),
-         (14,8,40,14,"6:30","Netflix","Scotland",0),
-         (15,8,40,14,"6:30","Netflix","Scotland",0),
-         (16,8,40,14,"6:30","Tesco","Scotland",0),
-         (17,8,40,14,"6:30","Tesco","Scotland",0),
-         (18,8,40,14,"6:30","Tesco","Scotland",0)]
+        [(11,8,30,1,"6:30","Tesco","England",0),
+         (12,8,40,3,"6:30","Tesco","Scotland",0),
+         (13,8,40,4,"6:30","Amazon","Wales",0),
+         (14,8,40,6,"6:30","Amazon","Scotland",0),
+         (15,8,40,7,"6:30","Tesco","Wales",0),
+         (16,8,40,9,"6:30","Tesco","Scotland",0),
+         (17,8,40,12,"6:30","Tesco","Scotland",0),
+         (18,8,40,14,"6:30","Netflix","Northen Island",0),
+         (19,8,40,14,"6:30","Netflix","Scotland",0),
+         (20,8,40,14,"6:30","Netflix","Scotland",0),
+         (21,8,40,14,"6:30","Tesco","Scotland",0),
+         (22,8,40,14,"6:30","Tesco","Scotland",0),
+         (23,8,40,14,"6:30","Tesco","Scotland",0)]
         
     )
     conn.commit()
@@ -120,7 +125,7 @@ def test_transactionNum():
 checkAmount_df = test_checkAmount()
 checkLocation_df = test_checkLocation()
 transactionNum_df = test_transactionNum()
+assert len(checkAmount_df) == 1
 assert len(checkLocation_df) == 2
 assert len(transactionNum_df) == 13
-assert len(checkAmount_df) == 1
 conn.close()
