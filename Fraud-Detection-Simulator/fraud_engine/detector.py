@@ -3,9 +3,6 @@ from pathlib import Path
 
 import random
 import numpy as np
-
-
-
 import pandas as pd
 
 #Check if a user has an unusually large transaction
