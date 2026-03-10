@@ -130,7 +130,7 @@ def nightTime(id, total_df, conn):
         "fraud_score"
     ] += 15
 #Main function used to detect frauds
-def fraudDetector(id, conn, fraud_conn):
+def fraudDetector(id, total_df, conn, fraud_conn):
     fraud_cursor = fraud_conn.cursor()
     #fraud_cursor.execute("DROP TABLE frauds")
 

@@ -71,7 +71,7 @@ total_df = pd.read_sql_query(
     con=conn
 )
 
-total_df = total_df.sort_values("time_readable")
+total_df = total_df.sort_values(["user_id", "time"])
 
 #Generating fraud criteria for logistic regression model
 #Checking if user makes a transaction in nightime
@@ -89,17 +89,17 @@ total_df["amount_deviation"] = abs((total_df["amount"]) - (total_df["average_amo
 
 #Creating feature for number of transactions a user makes
 
-total_df["transaction_amount"] = total_df.groupby("user_id")["transaction_id"].transform("count")
+total_df["transaction_amount"] = total_df.groupby("user_id")["transaction_id"].cumcount()
 
 #Creating feature for time since last transaction for given user_id
 
 total_df["prev_time"] = total_df.groupby("user_id")["time"].shift(1)
-total_df["time_since_last_transaction"] = abs(total_df["time"]) - abs(total_df["prev_time"])
+total_df["time_since_last_transaction"] = total_df["time"] - total_df["prev_time"]
 
 #Creating feature to check if the location has changed
 
 total_df["prev_location"] = total_df.groupby("user_id")["location"].shift(1)
-total_df["location_change"] = (total_df["location"] != total_df["prev_location"])
+total_df["location_change"] = (total_df["location"] != total_df["prev_location"]).astype(int)
 
 #Creating feature to check how often a user send a transaction to a certain merchant
 total_df["merchant_num"] = (total_df.groupby(["user_id", "merchant"])["transaction_id"].cumcount())
@@ -108,9 +108,16 @@ total_df["merchant_num"] = (total_df.groupby(["user_id", "merchant"])["transacti
 #Generating fraud scores using fraud detector
 
 for i in range(1, 6):
-    fraudDetector(i, conn, fraud_conn)
+    fraudDetector(i, total_df, conn, fraud_conn)
 
 #Using Matplotlib to plot a graph of frauds and normal transactions
+
+total_df = pd.read_sql_query(
+    "SELECT * FROM transactions",
+    con=conn
+)
+
+total_df["fraud_label"] = (total_df["fruad_score"] >= 70).astype(int)
 
 fraud_count = total_df.groupby("fraud_label")["transaction_id"].transform("count")
 
