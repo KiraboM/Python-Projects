@@ -1,13 +1,17 @@
 import numpy as np
 import pandas as pd
-import sklearn as sk
+#import sklearn as sk
 import random
 import sqlite3
-import matplotlib.pyplot as plt
+import matplotlib as plt
 from pathlib import Path
-from sklearn.linear_model import LogisticRegression
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from fraud_engine.detector import fraudDetector
 from fraud_engine.detector import checkAmount
 from fraud_engine.detector import checkLocation
@@ -18,13 +22,12 @@ company_list = ["Amazon", "Tesco", "Sainsbury's","Netflix", "Uniliever"]
 location_list = ["Enlgand", "Scotland", "Wales", "Northen Island"]
 name_list = ["Jeff", "Harris", "Jane", "Henry", "Silvia"]
 
-model = LogisticRegression()
 #Generating temporary database to store transactions
 db_path = Path(__file__).with_name("transaction.db")
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-db_fraud_path = db_path = Path(__file__).with_name("my_frauds.db")
+db_fraud_path = Path(__file__).with_name("my_frauds.db")
 fraud_conn = sqlite3.connect(db_fraud_path)
 fraud_cursor = fraud_conn.cursor()
 
@@ -43,11 +46,23 @@ CREATE TABLE IF NOT EXISTS transactions(
 
 conn.commit()
 
+# Reset generated transactions so reruns always start from a clean dataset.
+cursor.execute("DELETE FROM transactions")
+conn.commit()
+
 for i in range(100000):
     cursor.execute("""
-    INSERT INTO transactions (transaction_id, user_id, amount, time, time_readable, merchant, location, fraud_score)
-    VALUES (?, ?, ?, ?, ?, ?, ?,?)
-    """, (i, random.randint(1, 5), max(1 ,random.normalvariate(40, 30)), random.randint(1000000, 1000000000), str(random.randint(0, 23)) + ":" + str(random.randint(1, 59)), random.choice(company_list), random.choice(location_list), 0))
+    INSERT INTO transactions (user_id, amount, time, time_readable, merchant, location, fraud_score)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, 
+    (random.randint(1, 5),
+    max(1 ,random.normalvariate(40, 30)), 
+    random.randint(1000000, 1000000000), 
+    str(random.randint(0, 23)) + ":" + str(random.randint(1, 59)), 
+    random.choice(company_list), 
+    random.choice(location_list), 
+    0)
+)
 
 conn.commit()
 
@@ -56,7 +71,7 @@ total_df = pd.read_sql_query(
     con=conn
 )
 
-total_df = total_df.sort_values("time-readable")
+total_df = total_df.sort_values("time_readable")
 
 #Generating fraud criteria for logistic regression model
 #Checking if user makes a transaction in nightime
@@ -79,7 +94,7 @@ total_df["transaction_amount"] = total_df.groupby("user_id")["transaction_id"].t
 #Creating feature for time since last transaction for given user_id
 
 total_df["prev_time"] = total_df.groupby("user_id")["time"].shift(1)
-total_df["time_since_last_transaction"] = int(total_df.groupby("user_id")["time"]) - int(total_df.groupby("user_id")["prev_time"])
+total_df["time_since_last_transaction"] = abs(total_df["time"]) - abs(total_df["prev_time"])
 
 #Creating feature to check if the location has changed
 
@@ -103,3 +118,5 @@ fraud_count.plot(kind="bar")
 
 plt.xlabel("Fraud Label")
 plt.ylabel("Number of Transactions")
+
+print(total_df.head())
