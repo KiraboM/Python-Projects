@@ -105,13 +105,17 @@ def transactionNum(id, total_df, conn):
                     conn.commit()
                     flagged_ids.clear()
         else:
+            rows.reverse()
+            #Reverse order of rows array
+            #Enables us to pop leftmost value when needed
             while(time > 300):
                 left_df = total_df.iloc[left]
-                rows.remove(left_df)
+                temp = rows.pop()
                 thisID = int(left_df["transaction_id"])
                 flagged_ids.discard(thisID)
                 time = int(right_df["time"]) - int(left_df["time"])
                 left += 1
+            rows.reverse()
             foundMerchants = []
             #Remove any merchants that aren't in rows anymore
             for row in rows:
@@ -146,11 +150,6 @@ def fraudDetector(id, total_df, conn, fraud_conn):
                 fraud_score INTEGER
                 )
         """)
-    total_df = pd.read_sql_query(
-        "SELECT * FROM transactions WHERE user_id = ?",
-        con=conn,
-        params=[id]
-    )
     checkAmount(id, total_df, conn)
     checkLocation(id, total_df, conn)
     transactionNum(id, total_df, conn)

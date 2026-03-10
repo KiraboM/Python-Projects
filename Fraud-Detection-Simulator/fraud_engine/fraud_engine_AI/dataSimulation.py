@@ -3,7 +3,7 @@ import pandas as pd
 #import sklearn as sk
 import random
 import sqlite3
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
 
@@ -50,26 +50,42 @@ conn.commit()
 cursor.execute("DELETE FROM transactions")
 conn.commit()
 
+rows = []
+
 for i in range(100000):
-    cursor.execute("""
-    INSERT INTO transactions (user_id, amount, time, time_readable, merchant, location, fraud_score)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, 
-    (random.randint(1, 5),
-    max(1 ,random.normalvariate(40, 30)), 
-    random.randint(1000000, 1000000000), 
-    str(random.randint(0, 23)) + ":" + str(random.randint(1, 59)), 
-    random.choice(company_list), 
-    random.choice(location_list), 
-    0)
+    rows.append(
+        (random.randint(1, 5),
+        max(1 ,random.normalvariate(40, 30)), 
+        random.randint(1000000, 1000000000), 
+        str(random.randint(0, 23)) + ":" + str(random.randint(1, 59)), 
+        random.choice(company_list), 
+        random.choice(location_list), 
+        0)
+    )
+cursor.executemany(
+    """ INSERT INTO transactions (user_id, amount, time, time_readable, merchant, location, fraud_score)
+    VALUES (?, ?, ?, ?, ?, ?, ?) """,
+    rows
 )
 
 conn.commit()
+
 
 total_df = pd.read_sql_query(
     "SELECT * FROM transactions",
     con=conn
 )
+
+#Generating fraud scores using fraud detector
+
+for i in range(1, 6):
+    fraudDetector(i, total_df, conn, fraud_conn)
+
+total_df = pd.read_sql_query(
+    "SELECT * FROM transactions",
+    con=conn
+)
+
 
 total_df = total_df.sort_values(["user_id", "time"])
 
@@ -88,7 +104,7 @@ total_df["average_amount"] = total_df.groupby("user_id")["amount"].transform("me
 total_df["amount_deviation"] = abs((total_df["amount"]) - (total_df["average_amount"]))
 
 #Creating feature for number of transactions a user makes
-
+#fraud
 total_df["transaction_amount"] = total_df.groupby("user_id")["transaction_id"].cumcount()
 
 #Creating feature for time since last transaction for given user_id
@@ -104,22 +120,11 @@ total_df["location_change"] = (total_df["location"] != total_df["prev_location"]
 #Creating feature to check how often a user send a transaction to a certain merchant
 total_df["merchant_num"] = (total_df.groupby(["user_id", "merchant"])["transaction_id"].cumcount())
 
-
-#Generating fraud scores using fraud detector
-
-for i in range(1, 6):
-    fraudDetector(i, total_df, conn, fraud_conn)
-
 #Using Matplotlib to plot a graph of frauds and normal transactions
 
-total_df = pd.read_sql_query(
-    "SELECT * FROM transactions",
-    con=conn
-)
+total_df["fraud_label"] = (total_df["fraud_score"] >= 70).astype(int)
 
-total_df["fraud_label"] = (total_df["fruad_score"] >= 70).astype(int)
-
-fraud_count = total_df.groupby("fraud_label")["transaction_id"].transform("count")
+fraud_count = total_df.groupby("fraud_label")["transaction_id"].count()
 
 fraud_count.plot(kind="bar")
 
